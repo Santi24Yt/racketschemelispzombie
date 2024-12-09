@@ -1,0 +1,854 @@
+\documentclass{article}
+
+\usepackage[margin=2cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[parfill]{parskip}
+
+\usepackage{multicol}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+
+\usepackage{graphicx}
+
+\newcommand{\pr}{::=}
+\newcommand{\nt}[1]{\langle #1 \rangle}
+\newcommand{\gr}{\;|\;}
+\newcommand{\cd}[1]{\text{\lstinline[columns=fixed]{#1}}}
+\newcommand{\raa}{\Rightarrow}
+\newcommand{\amb}{\varepsilon}
+
+\usepackage[only,llbracket,rrbracket]{stmaryrd}
+\newcommand{\lbr}{\llbracket}
+\newcommand{\rbr}{\rrbracket}
+\newcommand{\typ}[1]{\lbr\, \boxed{#1} \,\rbr}
+\newcommand{\typx}[1]{\lbr\, #1 \,\rbr}
+
+\usepackage{listings}
+\usepackage[dvipsnames]{xcolor}
+
+\lstdefinestyle{minilisp}{
+  commentstyle=\color{codegreen},
+  keywordstyle=\color{OrangeRed},
+  basicstyle=\ttfamily,
+  identifierstyle=\color{Cyan}
+}
+
+\lstdefinelanguage{Minilisp}{
+  language=Lisp,
+  morekeywords={lambda,if,else,let*,t,f,add1,sub1,sqrt,expt,
+               not,or,and,letrec,head,tail,length,reverse,
+               concat,filter,sconcat,at,lstostr,Y,
+               number,boolean,string,list}
+}
+
+\lstset{style=minilisp,language=Minilisp,mathescape}
+\lstMakeShortInline[columns=fixed]@
+
+\usepackage{bussproofs}
+
+\newcommand{\Axi}[1]{\AxiomC{$#1$}}
+\newcommand{\BInf}[1]{\BinaryInfC{$#1$}}
+\newcommand{\UInf}[1]{\UnaryInfC{$#1$}}
+\newcommand{\TInf}[1]{\TrinaryInfC{$#1$}}
+\newcommand{\QInf}[1]{\QuaternaryInfC{$#1$}}
+\newcommand{\QqInf}[1]{\QuinaryInfC{$#1$}}
+
+\begin{document}
+  \begin{center}
+    \textbf{\Large Proyecto Final}\\
+    {\small Lenguajes de Programación}
+  \end{center}
+  \medskip
+
+  \section{Marco Teórico}
+
+  \subsection{Recursión y Combinadores de Punto Fijo}
+
+  La \textbf{recursión} es una técnica fundamental en programación funcional que permite a una función llamarse a sí misma para resolver problemas de manera iterativa o fractal. Esto es especialmente útil en cálculos como el factorial, la generación de series o el recorrido de estructuras de datos \cite{bird1998introduction}.
+
+  En lenguajes como MiniLisp, la recursión puede implementarse mediante combinadores de punto fijo, que permiten definir funciones recursivas sin asignarles un nombre explícito. Esto es relevante en entornos donde las funciones no tienen nombres asociados, como en la notación lambda pura \cite{barendregt1984lambda}.
+
+  Un \textbf{combinador de punto fijo} es una función de orden superior que, dada una función \( f \), encuentra un punto fijo tal que \( Y(f) = f(Y(f)) \). En términos simples, permite que una función se refiera a sí misma durante su ejecución sin requerir un nombre explícito.
+
+  Uno de los combinadores más conocidos es el combinador Y, definido como:
+
+  \[
+  Y = \lambda f.(\lambda x.f(x \, x))(\lambda x.f(x \, x))
+  \]
+
+  Este combinador puede utilizarse para definir funciones recursivas, como el cálculo del factorial:
+
+  \[
+  \text{Factorial} = Y(\lambda f. \lambda n. \text{if } n = 0 \text{ then } 1 \text{ else } n \cdot f(n-1))
+  \]
+
+  Aquí, la función recursiva calcula el factorial de \( n \) invocando la misma función \( f \) con \( n-1 \).
+
+  En el contexto de MiniLisp, los combinadores de punto fijo permiten extender la capacidad del lenguaje al introducir soporte para recursión. Esto elimina la necesidad de estructuras adicionales o referencias explícitas a funciones, simplificando el diseño y manteniendo el paradigma funcional puro \cite{hutton2016programming}.
+
+  La implementación de estos combinadores es clave para habilitar constructos avanzados, como el soporte para la definición de funciones anónimas recursivas.
+
+  \subsection{Combinador de Punto Fijo Y}
+
+  El \textbf{Combinador de Punto Fijo Y}, comúnmente conocido como \textbf{Combinador Y}, es una construcción fundamental en el cálculo lambda que permite la definición de funciones recursivas sin necesidad de nombrarlas explícitamente. Este combinador fue introducido por Haskell Curry y es esencial en la teoría de lenguajes de programación funcionales \cite{curry1958combinatory}.
+
+  \subsubsection{Definición Formal}
+
+  El Combinador Y se define en notación lambda de la siguiente manera:
+
+  \[
+  Y = \lambda f.(\lambda x.f(x \, x))(\lambda x.f(x \, x))
+  \]
+
+  Esta expresión permite que una función \( f \) se aplique a sí misma, facilitando la recursión en entornos donde las funciones no tienen nombres asignados.
+
+  \subsubsection{Propiedad de Punto Fijo}
+
+  Una función \( g \) tiene un punto fijo si existe un valor \( x \) tal que \( g(x) = x \). El Combinador Y encuentra dicho punto fijo para una función dada, es decir, \( Y(g) = g(Y(g)) \). Esto es especialmente útil para definir funciones recursivas en el cálculo lambda, donde no se permite la auto-referencia directa.
+
+  \subsubsection{Aplicación en Funciones Recursivas}
+
+  El Combinador Y se utiliza para definir funciones recursivas como el factorial. Por ejemplo, la función factorial se puede expresar utilizando el Combinador Y de la siguiente manera:
+
+  \[
+  \text{Factorial} = Y(\lambda f. \lambda n. \text{if } n = 0 \text{ then } 1 \text{ else } n \cdot f(n-1))
+  \]
+
+  Aquí, la función anónima toma como argumentos una función \( f \) y un número \( n \). Si \( n \) es 0, devuelve 1; de lo contrario, multiplica \( n \) por la aplicación de \( f \) a \( n-1 \). El Combinador Y permite que \( f \) se refiera a sí misma, logrando la recursión necesaria para calcular el factorial.
+
+  \subsection{Semántica Estática}
+
+  La \textbf{semántica estática} en los lenguajes de programación se refiere al conjunto de reglas y restricciones que determinan la validez de un programa sin necesidad de ejecutarlo. Estas reglas se aplican durante la fase de compilación o análisis estático y aseguran que el código fuente cumpla con ciertas propiedades antes de su ejecución \cite{pierce2002types}.
+
+  \subsubsection{Aspectos Clave de la Semántica Estática}
+
+  \begin{itemize}
+    \item \textbf{Verificación de Tipos}: Garantiza que las operaciones en el programa se realicen entre tipos de datos compatibles, previniendo errores en tiempo de ejecución. Por ejemplo, evitar la suma de un número entero con una cadena de texto.
+
+    \item \textbf{Alcance de Variables}: Define la región del código donde una variable es accesible, evitando conflictos de nombres y asegurando que las variables se utilicen dentro de su contexto adecuado.
+
+    \item \textbf{Reglas de Visibilidad}: Determina qué partes del programa pueden acceder a ciertas variables o funciones, estableciendo niveles de acceso y encapsulamiento.
+
+    \item \textbf{Constantes y Literales}: Verifica que las constantes se asignen correctamente y que los literales se utilicen de manera coherente con su tipo declarado.
+
+    \item \textbf{Declaraciones y Definiciones}: Asegura que todas las variables y funciones estén declaradas antes de su uso, evitando referencias a elementos inexistentes.
+  \end{itemize}
+
+  \subsubsection{Importancia de la Semántica Estática}
+
+  La aplicación de la semántica estática es fundamental para detectar errores potenciales en las primeras etapas del desarrollo, mejorando la confiabilidad y seguridad del software. Al identificar inconsistencias y violaciones de las reglas del lenguaje durante la compilación, se reducen los errores en tiempo de ejecución y se facilita el mantenimiento del código.
+
+  \subsection{Inferencia de Tipos}
+
+  La \textbf{inferencia de tipos} es una característica de ciertos lenguajes de programación que permite al compilador deducir automáticamente el tipo de una expresión sin necesidad de anotaciones explícitas por parte del programador. Este proceso facilita la escritura de código más conciso y legible, manteniendo al mismo tiempo la seguridad y coherencia tipológica del programa \cite{milner1978theory}.
+
+  \subsubsection{Funcionamiento de la Inferencia de Tipos}
+
+  Durante la compilación, el sistema de inferencia analiza las expresiones y declaraciones en el código para determinar sus tipos. Por ejemplo, al evaluar la expresión \texttt{3 + 4}, el compilador infiere que tanto \texttt{3} como \texttt{4} son enteros, y por lo tanto, el resultado de la suma también es un entero. Este análisis se basa en las reglas del lenguaje y en el contexto en el que se utilizan las expresiones.
+
+  \subsubsection{Ventajas de la Inferencia de Tipos}
+
+  \begin{itemize}
+    \item \textbf{Código más conciso}: Al eliminar la necesidad de anotaciones de tipos explícitas, el código se vuelve más limpio y fácil de leer.
+
+    \item \textbf{Detección temprana de errores}: El compilador puede identificar inconsistencias de tipos durante la compilación, reduciendo la posibilidad de errores en tiempo de ejecución.
+
+    \item \textbf{Flexibilidad}: Permite escribir funciones genéricas que pueden operar sobre diferentes tipos sin necesidad de especificar cada uno de ellos explícitamente.
+  \end{itemize}
+
+  \subsubsection{Lenguajes que Implementan Inferencia de Tipos}
+
+  Varios lenguajes de programación incorporan inferencia de tipos en mayor o menor medida. Algunos ejemplos incluyen:
+
+  \begin{itemize}
+    \item \textbf{Haskell}: Utiliza un sistema de tipos fuerte y la inferencia de tipos es una característica central, permitiendo escribir código sin anotaciones de tipos explícitas en la mayoría de los casos.
+
+    \item \textbf{ML y sus derivados (OCaml, F\#)}: Estos lenguajes funcionales implementan la inferencia de tipos mediante el algoritmo Hindley-Milner, que permite deducir tipos de manera eficiente y segura.
+
+    \item \textbf{Rust}: Aunque es un lenguaje de sistemas, Rust incorpora inferencia de tipos para mejorar la ergonomía del lenguaje sin sacrificar la seguridad.
+
+    \item \textbf{Kotlin}: Ofrece inferencia de tipos en variables locales y en la definición de funciones, reduciendo la necesidad de anotaciones explícitas.
+  \end{itemize}
+
+  \subsubsection{Algoritmo Hindley-Milner}
+
+  Uno de los algoritmos más conocidos para la inferencia de tipos es el \textbf{Hindley-Milner}, desarrollado inicialmente para el lenguaje ML. Este algoritmo permite deducir tipos de manera eficiente y es la base de la inferencia de tipos en varios lenguajes funcionales. Se basa en la unificación de tipos y en la generación de un tipo más general que satisface todas las restricciones impuestas por el código \cite{hindley1969principal}.
+
+  \subsubsection{Limitaciones de la Inferencia de Tipos}
+
+  Aunque la inferencia de tipos ofrece múltiples ventajas, también presenta ciertas limitaciones:
+
+  \begin{itemize}
+    \item \textbf{Complejidad en casos avanzados}: En programas con estructuras de tipos complejas o uso intensivo de polimorfismo, el compilador puede requerir anotaciones explícitas para resolver ambigüedades.
+
+    \item \textbf{Mensajes de error menos claros}: En ocasiones, los errores de tipos inferidos pueden generar mensajes menos intuitivos, dificultando la depuración.
+
+    \item \textbf{Rendimiento de compilación}: La inferencia de tipos puede aumentar el tiempo de compilación, especialmente en proyectos grandes o con código altamente genérico.
+  \end{itemize}
+
+  \section{Especificación Formal del Lenguaje}
+  \textbf{Sintaxis Concreta}
+  \begin{align*}
+    \nt{expr} \pr & \nt{id}\\
+              \gr & \nt{num}\\
+              \gr & \nt{bool}\\
+              % Nuevo
+              % TODO: Elegir representación de listas
+              % \gr & \nt{list}\\
+              % Nuevo
+              \gr & \nt{string}\\
+              \gr & \cd{(}\nt{op}\ \nt{expr}\ \{\nt{expr}\}\cd{)}\\
+              \gr & \cd{(let ([}\nt{id}\ \nt{expr}\cd{]}\ \{\cd{[}\nt{id}\ \nt{expr}\cd{]}\}\ \nt{expr}\cd{)}\\
+              \gr & \cd{(let* ([}\nt{id}\ \nt{expr}\cd{]}\ \{\cd{[}\nt{id}\ \nt{expr}\cd{]}\}\ \nt{expr}\cd{)}\\
+              \gr & \cd{(if}\ \nt{expr}\ \nt{expr}\ \nt{expr}\cd{)}\\
+              \gr & \cd{(cond (}\{\cd{[}\nt{expr}\ \nt{expr}\cd{]}\}\cd{) (else}\ \nt{expr}\cd{))}\\
+              \gr & \cd{(lambda (}\nt{id}\ \{\nt{id}\}\cd{)}\ \nt{expr}\cd{)}\\
+              \gr & \cd{(}\nt{expr}\ \nt{expr}\ \{\nt{expr}\}\cd{)}\\
+              % Nuevo
+              \gr & \cd{(letrec (}\nt{id}\ \nt{expr}\cd{)}\ \nt{expr}\cd{)}\\
+              % Nuevo
+              \gr & \cd{(list}\ \{\nt{expr}\}\cd{)}\\
+              \text{\phantom{.}}\\
+              %
+    \nt{num} \pr & \dots \ \cd{2.5} \gr \cd{-1} \gr \cd{0} \gr \cd{1} \gr \cd{18.35} \ \dots\\
+              \text{\phantom{.}}\\
+              %
+    \nt{bool} \pr & \cd{#t} \gr \cd{#f}\\
+              \text{\phantom{.}}\\
+              %
+    % Nuevo
+    % TODO: Elegir representación de listas
+    % \nt{list} \pr & \cd{(}\{\nt{expr}\}\cd{)}\\
+    %           \text{\phantom{.}}\\
+              %
+    \nt{string} \pr & \cd{"a"} \gr \cd{"b"} \gr \cd{"Hello world!"} \gr \dots\\
+              \text{\phantom{.}}\\
+              %
+    \nt{op} \pr & \cd{+} \gr \cd{-} \gr \cd{*} \gr \cd{/} \gr \cd{add1} \gr \cd{sub1} \gr \cd{sqrt} \gr \cd{expt} \gr\\
+                & \cd{<} \gr \cd{>} \gr \cd{=} \gr \cd{not} \gr \cd{or} \gr \cd{and} \gr\\
+                & \cd{head} \gr \cd{tail} \gr \cd{length} \gr \cd{reverse} \gr \cd{concat} \gr \cd{map} \gr \cd{filter} \gr\\
+                & \cd{sconcat} \gr \cd{at} \gr \cd{lstostr}\\
+              \text{\phantom{.}}\\
+              %
+    \nt{id} \pr & \cd{a} \gr \cd{b} \gr \cd{foo} \gr \dots
+  \end{align*}
+  \clearpage
+
+  \textbf{Sintaxis Abstracta Endulzada}
+  \begin{center}
+    $Ops = \{\cd{+},\,\cd{-},\,\cd{*},\,\cd{/},\,\cd{add1},\,\cd{sub1},\,\cd{sqrt},\,\cd{expt},\,
+              \cd{<},\,\cd{>},\,\cd{=},\, \cd{not},\,\cd{or},\,\cd{and},$
+              \hphantom{1.5cm} $\cd{head},\,\cd{tail},\,\cd{length},\,\cd{reverse},\,\cd{concat},\,\cd{map},\,\cd{filter}$\\
+              \hphantom{1.5cm} $\cd{sconcat},\,\cd{at},\,\cd{lstostr}\}$
+  \end{center}
+  \centerline{$\texttt{Binding} \subseteq \texttt{String} \times \texttt{SASA}$}
+  \begin{multicols}{3}
+    \begin{prooftree}
+      \Axi{i \texttt{:String}}
+      \UInf{IdS(i) \texttt{:SASA}}
+    \end{prooftree}
+
+    \begin{prooftree}
+      \Axi{n \in \mathbb{Z}}
+      \UInf{NumS(n) \texttt{:SASA}}
+    \end{prooftree}
+
+    \begin{prooftree}
+      \Axi{b \in \mathbb{B}}
+      \UInf{BooleanS(b) \texttt{:SASA}}
+    \end{prooftree}
+
+    \begin{prooftree}
+      \Axi{f \in Ops}
+      \Axi{args\texttt{:[SASA]}}
+      \BInf{Op(f,\,args)\texttt{:SASA}}
+    \end{prooftree}
+
+    \begin{prooftree}
+      \Axi{b\texttt{:[Binding]}}
+      \Axi{c\texttt{:SASA}}
+      \BInf{Let(b,\,c)\texttt{:SASA}}
+    \end{prooftree}
+
+    \begin{prooftree}
+      \Axi{b\texttt{:[Binding]}}
+      \Axi{c\texttt{:SASA}}
+      \BInf{Let1(b,\,c)\texttt{:SASA}}
+    \end{prooftree}
+
+    \begin{prooftree}
+      \Axi{c\texttt{:SASA}}
+      \Axi{t\texttt{:SASA}}
+      \Axi{e\texttt{:SASA}}
+      \TInf{If(c,\,t,\,e)\texttt{:SASA}}
+    \end{prooftree}
+
+    \begin{prooftree}
+      \Axi{cs\texttt{:[(SASA, SASA)]}}
+      \Axi{e\texttt{:SASA}}
+      \BInf{Cond(cs,\,e)\texttt{:SASA}}
+    \end{prooftree}
+
+    \begin{prooftree}
+      \Axi{p\texttt{:[String]}}
+      \Axi{c\texttt{:SASA}}
+      \BInf{Fun(p,\,c)\texttt{:SASA}}
+    \end{prooftree}
+
+    \begin{prooftree}
+      \Axi{f\texttt{:SASA}}
+      \Axi{a\texttt{:[SASA]}}
+      \BInf{App(f,\,a)\texttt{:SASA}}
+    \end{prooftree}
+
+    \begin{prooftree}
+      \Axi{i\texttt{:String}}
+      \Axi{v\texttt{:SASA}}
+      \Axi{c\texttt{:SASA}}
+      \TInf{Letrec(i,\,v,\,c)\texttt{:SASA}}
+    \end{prooftree}
+
+    \begin{prooftree}
+      \Axi{l\texttt{:[SASA]}}
+      \UInf{List(l)\texttt{:SASA}}
+    \end{prooftree}
+
+    \begin{prooftree}
+      \Axi{s \texttt{:String}}
+      \UInf{StringS(s) \texttt{:SASA}}
+    \end{prooftree}
+  \end{multicols}
+
+  \textbf{Sintaxis Abstracta Desendulzada}
+  \begin{center}
+    $U = \{\cd{add1},\,\cd{sub1},\,\cd{sqrt},\,\cd{not},\,\cd{head},\,\cd{lstostr}\}$
+
+    $B = \{\cd{+},\,\cd{-},\,\cd{*},\,\cd{/},\,\cd{expt},\,\cd{<},\,\cd{>},\,\cd{=},\,\cd{or},\,\cd{and},\,\cd{map},\,\cd{filter},\,\cd{sconcat},\,\cd{at}\}$
+
+    $U_{ns} = \{\cd{tail},\,\cd{length},\,\cd{reverse}\}$
+
+    $B_{ns} = \{\cd{concat}\}$
+  \end{center}
+  \begin{multicols}{3}
+    \begin{prooftree}
+      \Axi{i\texttt{:String}}
+      \UInf{Id(i)\texttt{:ASA}}
+    \end{prooftree}
+
+    \begin{prooftree}
+      \Axi{n \in \mathbb{Z}}
+      \UInf{Num(n)\texttt{:ASA}}
+    \end{prooftree}
+
+    \begin{prooftree}
+      \Axi{b \in \mathbb{B}}
+      \UInf{Boolean(b)\texttt{:ASA}}
+    \end{prooftree}
+
+    \begin{prooftree}
+      \Axi{f \in U}
+      \Axi{arg\texttt{:ASA}}
+      \BInf{Unop(f,\, arg)\texttt{:ASA}}
+    \end{prooftree}
+
+    \begin{prooftree}
+      \Axi{f \in B}
+      \Axi{i\texttt{:ASA}}
+      \Axi{d\texttt{:ASA}}
+      \TInf{Binop(f,\,i,\,d)\texttt{:ASA}}
+    \end{prooftree}
+
+    \begin{prooftree}
+      \Axi{c\texttt{:ASA}}
+      \Axi{t\texttt{:ASA}}
+      \Axi{e\texttt{:ASA}}
+      \TInf{If(c,\,t,\,e)\texttt{:ASA}}
+    \end{prooftree}
+
+    \begin{prooftree}
+      \Axi{p\texttt{:String}}
+      \Axi{c\texttt{:ASA}}
+      \BInf{Fun(p,\,c)\texttt{:ASA}}
+    \end{prooftree}
+
+    \begin{prooftree}
+      \Axi{f\texttt{:ASA}}
+      \Axi{a\texttt{:ASA}}
+      \BInf{App(f,\,a)\texttt{:ASA}}
+    \end{prooftree}
+
+    \begin{prooftree}
+      \Axi{l\texttt{:[ASA]}}
+      \UInf{List(l)\texttt{:ASA}}
+    \end{prooftree}
+
+    \begin{prooftree}
+      \Axi{s \texttt{:String}}
+      \UInf{String(s)\texttt{:ASA}}
+    \end{prooftree}
+  \end{multicols}
+
+  Valores finales
+  \begin{multicols}{3}
+    \begin{prooftree}
+      \Axi{n \in \mathbb{Z}}
+      \UInf{NumV(n)\texttt{:Value}}
+    \end{prooftree}
+
+    \begin{prooftree}
+      \Axi{b \in \mathbb{B}}
+      \UInf{BooleanV(b)\texttt{:Value}}
+    \end{prooftree}
+
+    \begin{prooftree}
+      \Axi{p\texttt{:String}}
+      \Axi{c\texttt{:Value}}
+      \Axi{\amb\texttt{:Env}}
+      \TInf{\nt{p,\,c,\,\amb}\texttt{:Value}}
+    \end{prooftree}
+
+    \begin{prooftree}
+      \Axi{e\texttt{:ASA}}
+      \Axi{\amb\texttt{:Env}}
+      \BInf{\nt{e,\,\amb}\texttt{:Value}}
+    \end{prooftree}
+
+    \begin{prooftree}
+      \Axi{l\texttt{:[Value]}}
+      \UInf{ListV(l)\texttt{:Value}}
+    \end{prooftree}
+
+    \begin{prooftree}
+      \Axi{s \texttt{:String}}
+      \UInf{StringV(s)\texttt{:Value}}
+    \end{prooftree}
+  \end{multicols}
+
+  \textbf{Semántica Natural}
+
+  Identificadores se buscan en el ambiente y se retorna error de variable libre si no son encontrados
+  \begin{prooftree}
+    \Axi{}
+    \UInf{Id(i),\amb \raa \amb(i)}
+  \end{prooftree}
+
+  Numeros se reducen a si mismos
+  \begin{prooftree}
+    \Axi{}
+    \UInf{Num(n),\amb \raa NumV(n)}
+  \end{prooftree}
+
+  Booleanos se reducen a si mismos
+  \begin{prooftree}
+    \Axi{}
+    \UInf{Boolean(b),\amb \raa BooleanV(b)}
+  \end{prooftree}
+
+  Listas se reducen a si mismas
+  \begin{prooftree}
+    \Axi{}
+    \UInf{List(l),\amb \raa ListV(l)}
+  \end{prooftree}
+
+  Strings se reducen a si mismas
+  \begin{prooftree}
+    \Axi{}
+    \UInf{String(s),\amb \raa StringV(s)}
+  \end{prooftree}
+
+  Las operaciones unarias y binarias que requieren puntos estrictos ($U,\,B$) se interpretan mediante la operación correspondiente
+  \begin{prooftree}
+    \Axi{elige(f) = g}
+    \Axi{arg,\amb \raa a}
+    \Axi{strict(a) = v'}
+    \Axi{g(v') = v''}
+    \QInf{Unop(f,\,arg),\amb \raa v''}
+  \end{prooftree}
+
+  \begin{prooftree}
+    \Axi{elige(f) = g}
+    \Axi{i,\amb \raa i' \quad d,\amb \raa d'}
+    \Axi{strict(i') = i'' \quad strict(d') = d''}
+    \Axi{g(i'', d'') = v}
+    \QInf{Binop(f,i,d),\amb \raa v}
+  \end{prooftree}
+  Donde $elige$ es una función que transforma la operación en sintaxis abstracta a la operación correspondiente en
+  el lenguaje anfitrión
+
+  Las operaciones unarias y binarias que \textbf{no} requieren puntos estrictos ($U_{ns},\,B_{ns}$) se interpretan mediante la operación correspondiente
+  \begin{prooftree}
+    \Axi{elige(f) = g}
+    \Axi{arg,\amb \raa a}
+    \Axi{g(a) = v''}
+    \TInf{Unop_{ns}(f,\,arg),\amb \raa v''}
+  \end{prooftree}
+
+  \begin{prooftree}
+    \Axi{elige(f) = g}
+    \Axi{i,\amb \raa i' \quad d,\amb \raa d'}
+    \Axi{g(i', d') = v}
+    \TInf{Binop_{ns}(f,i,d),\amb \raa v}
+  \end{prooftree}
+  Donde $elige$ es una función que transforma la operación en sintaxis abstracta a la operación correspondiente en
+  el lenguaje anfitrión
+
+  Condicional @if@
+  \begin{prooftree}
+    \Axi{c,\amb \raa c'}
+    \Axi{strict(c') = Boolean(True)}
+    \Axi{t,\amb \raa t'}
+    \TInf{If(c,t,e),\amb \raa t'}
+  \end{prooftree}
+
+  \begin{prooftree}
+    \Axi{c,\amb \raa c'}
+    \Axi{strict(c') = Boolean(False)}
+    \Axi{e,\amb \raa e'}
+    \TInf{If(c,t,e),\amb \raa e'}
+  \end{prooftree}
+
+  Expresiones @lambda@
+  \begin{prooftree}
+    \Axi{}
+    \UInf{Fun(p,c),\amb \raa \nt{p,c,\amb}}
+  \end{prooftree}
+
+  Aplicaciones de función
+  \begin{prooftree}
+    \Axi{f,\amb \raa f'}
+    \Axi{strict(f') = \nt{p,c,\amb'}}
+    \Axi{c,\amb'[p \gets \nt{a,\amb}] \raa c_v}
+    \TInf{App(f, a),\amb \raa c_v}
+  \end{prooftree}
+
+  Notemos que el @letrec@ se convertirá en una aplicación de función con el combinador Y
+
+  \begin{center}
+  \scalebox{0.85}{
+  \begin{minipage}{\linewidth}
+  \begin{center}
+    $\cd{(letrec (ft (lambda (n) (if (= n 0) 1 (* n (ft (- n 1)))))) (ft 5))}\ \raa$\\
+    $\cd{((lambda (ft) (ft 5)) (Y (lambda (ft) (lambda (n) (if (= n 0) 1 (* n (ft (- n 1))))))))}$\\
+    Lo cuál es igual a
+    $\cd{((Y (lambda (ft) (lambda (n) (if (= n 0) 1 (* n (ft (- n 1))))))) 5)}$\\
+    $ft = \lambda ft.\lambda n.\,\text{if}\ n = 0\ \text{then}\ 1\ \text{else}\ n \cdot ft(n-1)$\\
+    $(Y\ ft)\ 5$
+  \end{center}
+  \end{minipage}
+  }
+  \end{center}
+
+
+  \section{Algoritmo de Inferencia de Tipos}
+
+  El \textbf{Algoritmo de Inferencia de Tipos} es un proceso que permite deducir el tipo de las expresiones en un programa sin necesidad de anotaciones explícitas. Uno de los algoritmos más utilizados es el \textbf{Algoritmo W}, asociado al sistema de tipos Hindley-Milner \cite{damas1982principal}.
+
+  \subsection{Descripción del Algoritmo W}
+
+  El Algoritmo W funciona recorriendo el árbol sintáctico abstracto del programa y generando un conjunto de ecuaciones de tipos (también conocidas como restricciones de tipos). Luego, resuelve estas ecuaciones mediante unificación, encontrando el tipo más general que satisface todas las restricciones \cite{pierce2002types}.
+
+  \subsection{Restricciones}
+  Identificadores\\
+  Igualar todas las apariciones\\
+  $\typx{x_1} = \typx{x_2} = \dots = \typx{x_n}$\\
+  Que en realidad genera\\
+  $\typx{x_1} = \typx{x_2}$\\
+  $\dots$\\
+  $\typx{x_1} = \typx{x_n}$
+
+  Números\\
+  $\typx{n} = \cd{number}$
+
+  Booleanos\\
+  $\typx{b} = \cd{boolean}$
+
+  Strings\\
+  $\typx{s} = \cd{string}$
+
+  Listas\\
+  $\typx{l} = \cd{list}$
+
+  Operaciones aritméticas\\
+  $op = \{\cd{add1},\,\cd{sub1},\,\cd{sqrt},\,\cd{+},\,\cd{-},\,\cd{*},\,\cd{/},\,\cd{expt}\}$\\
+  $\typx{\cd{(}op\ n_1\ \dots\ n_i\cd{)}} = \cd{number}$\\
+  $\typx{n_1} = \cd{number}$\\
+  $\dots$\\
+  $\typx{n_i} = \cd{number}$
+
+  Comparaciones\\
+  $op = \{\cd{<},\,\cd{>},\,\cd{=}\}$\\
+  $\typx{\cd{(}op\ n_1\ \dots\ n_i\cd{)}} = \cd{boolean}$\\
+  $\typx{n_1} = \cd{number}$\\
+  $\dots$\\
+  $\typx{n_i} = \cd{number}$
+
+  Operaciones booleanas\\
+  $op = \{\cd{not},\,\cd{or},\,\cd{and}\}$\\
+  $\typx{\cd{(}op\ b_1\ \dots\ b_n\cd{)}} = \cd{boolean}$\\
+  $\typx{b_1} = \cd{boolean}$\\
+  $\dots$\\
+  $\typx{b_n} = \cd{boolean}$
+
+  If\\
+  $\typx{\cd{(if}\ c\ t\ e\cd{)}} = \typx{t}$\\
+  $\typx{\cd{(if}\ c\ t\ e\cd{)}} = \typx{e}$\\
+  $\typx{c} = \cd{boolean}$\\
+  $\typx{t} = \typx{e}$
+  
+  \clearpage
+
+  Cond\\
+  $\typx{\cd{(cond ([}c_1\ t_1\cd{]}\ \dots\ \cd{[}c_n\ t_n\cd{]) (else}\ e\cd{))}} = \typx{t_1}$\\
+  $\dots$\\
+  $\typx{\cd{(cond ([}c_1\ t_1\cd{]}\ \dots\ \cd{[}c_n\ t_n\cd{]) (else}\ e\cd{))}} = \typx{t_n}$\\
+  $\typx{\cd{(cond ([}c_1\ t_1\cd{]}\ \dots\ \cd{[}c_n\ t_n\cd{]) (else}\ e\cd{))}} = \typx{e}$\\
+  $\typx{c_1} = \cd{boolean}$\\
+  $\dots$\\
+  $\typx{c_n} = \cd{boolean}$\\
+  $\typx{t_1} = \typx{t_2}$\\
+  $\dots$\\
+  $\typx{t_1} = \typx{t_n}$\\
+  $\typx{t_1} = \typx{e}$
+
+  Let\\
+  $\typx{\cd{(let ([}i_1\ v_1\cd{]}\ \dots\ \cd{[}i_n\ v_n\cd{]}\cd{)}\ c\cd{)}} = \typx{c}$\\
+  $\typx{i_1} = \typx{v_1}$\\
+  $\dots$\\
+  $\typx{i_n} = \typx{v_n}$
+
+  % TODO: Hacerlo bien
+  Let*\\
+  $\typx{\cd{(let* ([}i_1\ v_1\cd{]}\ \dots\ \cd{[}i_n\ v_n\cd{]}\cd{)}\ c\cd{)}} = \typx{c}$\\
+  $\typx{i_1} = \typx{v_1}$\\
+  $\dots$\\
+  $\typx{i_n} = \typx{v_n}$
+
+  % TODO: Letrec
+
+  Funciones\\
+  $\typx{\cd{(lambda (}p_1\ \dots\ p_n\cd{)}\ b\cd{)}} = \typx{p_1} \rightarrow \dots \rightarrow \typx{p_n} \rightarrow \typx{b}$
+
+  Aplicaciones de función $\cd{(}f\ \ a_1\ \dots\ a_n\cd{)}$\\
+  $\typx{f} = \typx{a_1} \rightarrow \dots \rightarrow \typx{a_n} \rightarrow \typx{\cd{(}f\ \ a_1\ \dots\ a_n\cd{)}}$
+
+  Concatenación de Strings\\
+  $\typx{\cd{(sconcat}\ s_1\ \dots\ s_n\cd{)}} = \cd{string}$\\
+  $\typx{s_1} = \cd{string}$\\
+  $\dots$\\
+  $\typx{s_n} = \cd{string}$
+
+  At (Obtener cadena en un índice)\\
+  $\typx{\cd{(at}\ n\ s\cd{)}} = \cd{string}$\\
+  $\typx{n} = \cd{number}$\\
+  $\typx{s} = \cd{string}$
+
+  Head\\
+  $\typx{\cd{(head}\ l\cd{)}} = T_{uuid}$\\
+  $\typx{l} = \cd{list}$
+
+  Tail\\
+  $\typx{\cd{(tail}\ l\cd{)}} = \cd{list}$\\
+  $\typx{l} = \cd{list}$
+
+  Length\\
+  $\typx{\cd{(length}\ l\cd{)}} = \cd{number}$\\
+  $\typx{l} = \cd{list}$
+
+  Reverse\\
+  $\typx{\cd{(reverse}\ l\cd{)}} = \cd{list}$\\
+  $\typx{l} = \cd{list}$
+
+  Concatenación\\
+  $\typx{\cd{(concat}\ l_1\ l_2\cd{)}} = \cd{list}$\\
+  $\typx{l_1} = \cd{list}$\\
+  $\typx{l_2} = \cd{list}$
+
+  Lista a String\\
+  $\typx{\cd{(lstostr}\ l\cd{)}} = \cd{string}$\\
+  $\typx{l} = \cd{list}$
+
+  Filter\\
+  $\typx{\cd{(filter}\ f\ l\cd{)}} = \cd{list}$\\
+  $\typx{f = \cd{(lambda (}p\cd{)}\ b\cd{)}} = \typx{p} \rightarrow \typx{b}$\\
+  $\typx{b} = \cd{boolean}$\\
+  $\typx{l} = \cd{list}$
+
+  Map\\
+  $\typx{\cd{(map}\ f\ l\cd{)}} = \cd{list}$\\
+  $\typx{f = \cd{(lambda (}p\cd{)}\ b\cd{)}} = \typx{p} \rightarrow \typx{b}$\\
+  $\typx{l} = \cd{list}$
+
+
+  \subsection{Detalles del Algoritmo}
+
+  El algoritmo se basa en los siguientes componentes clave:
+
+  \begin{itemize}
+    \item \textbf{Variables de Tipo}: Representan tipos desconocidos que se irán determinando a lo largo del proceso.
+
+    \item \textbf{Entorno de Tipos}: Una asociación entre identificadores y sus tipos correspondientes.
+
+    \item \textbf{Unificación}: Un proceso para determinar si dos tipos pueden hacerse iguales mediante la sustitución de variables de tipo.
+
+    \item \textbf{Generalización y Especialización}: La capacidad de crear tipos polimórficos generales o instancias específicas de esos tipos.
+  \end{itemize}
+
+  \subsection{Pasos del Algoritmo}
+
+  El Algoritmo W se puede describir mediante los siguientes pasos:
+
+  \begin{enumerate}
+    \item \textbf{Inicialización}: Comienza con un entorno de tipos vacío y sin restricciones.
+
+    \item \textbf{Análisis de Expresiones}: Para cada expresión en el programa, se realiza:
+
+    \begin{enumerate}
+      \item \textbf{Generación de Variables de Tipo}: Se asignan variables de tipo frescas a las expresiones cuya tipología es aún desconocida.
+
+      \item \textbf{Generación de Restricciones}: Se generan restricciones basadas en cómo interactúan las expresiones, según las reglas del lenguaje.
+
+      \item \textbf{Unificación}: Se aplican las restricciones mediante unificación, encontrando sustituciones que resuelven las variables de tipo.
+
+      \item \textbf{Actualización del Entorno}: Se actualiza el entorno de tipos con la nueva información obtenida.
+    \end{enumerate}
+
+    \item \textbf{Generalización}: Al finalizar el análisis de una función o expresión, se generalizan los tipos libres, permitiendo polimorfismo.
+
+    \item \textbf{Asignación de Tipos}: Se asignan los tipos inferidos a las variables y expresiones correspondientes, completando el proceso.
+  \end{enumerate}
+
+  \subsection{Ejemplo de Inferencia de Tipos}
+
+  Considere la siguiente función en MiniLisp:
+
+  \begin{lstlisting}
+  (lambda (x) (+ x 1))
+  \end{lstlisting}
+
+  El proceso de inferencia sería:
+
+  \begin{itemize}
+    \item Asignar una variable de tipo $\alpha$ a $x$.
+
+    \item La expresión $(+\, x\, 1)$ requiere que $x$ sea de tipo numérico, ya que $+$ opera sobre números.
+
+    \item Se genera la restricción $\alpha = \text{Num}$.
+
+    \item Tras la unificación, se determina que $x$ es de tipo $\text{Num}$.
+
+    \item La función completa tiene el tipo $\text{Num} \rightarrow \text{Num}$.
+  \end{itemize}
+
+  \subsection{Implementación en MiniLisp}
+
+  Para implementar el Algoritmo W en MiniLisp, se deben seguir los siguientes pasos:
+
+  \begin{enumerate}
+    \item \textbf{Extender el Analizador Sintáctico}: Modificar el parser para que, además de construir el árbol sintáctico abstracto, también recopile información necesaria para la inferencia de tipos.
+
+    \item \textbf{Crear Estructuras para Tipos y Restricciones}: Definir estructuras de datos que representen variables de tipo, tipos concretos, y las restricciones entre ellos.
+
+    \item \textbf{Implementar el Motor de Unificación}: Escribir funciones que permitan unificar tipos, resolviendo las restricciones y detectando posibles conflictos o errores de tipos.
+
+    \item \textbf{Integrar el Algoritmo en el Proceso de Compilación}: Asegurar que antes de la evaluación o generación de código, se realice la inferencia de tipos y se verifiquen las restricciones.
+
+    \item \textbf{Manejo de Errores}: Diseñar mecanismos para informar al usuario sobre errores de tipos de manera clara y útil.
+  \end{enumerate}
+
+  \subsection{Desafíos en la Implementación}
+
+  Algunos de los desafíos al implementar el Algoritmo W incluyen:
+
+  \begin{itemize}
+    \item \textbf{Manejo de Polimorfismo}: Asegurar que la generalización y especialización de tipos se realice correctamente, evitando pérdidas de generalidad o errores de tipado.
+
+    \item \textbf{Eficiencia}: Optimizar el proceso de unificación y gestión de restricciones para que sea eficiente incluso en programas grandes.
+
+    \item \textbf{Extensibilidad}: Diseñar el sistema de inferencia de tipos de manera que pueda extenderse para soportar nuevos constructos del lenguaje o sistemas de tipos más avanzados, como tipos algebraicos o de datos.
+
+    \item \textbf{Interfaz con el Usuario}: Proporcionar mensajes de error y advertencias que sean comprensibles para el programador, facilitando la corrección de errores de tipos.
+  \end{itemize}
+
+  \subsection{Referencias Clave}
+
+  Para una comprensión más profunda del Algoritmo W y su implementación, se recomiendan las siguientes referencias:
+
+  \begin{itemize}
+    \item Milner, R. (1978). A theory of type polymorphism in programming. \textit{Journal of Computer and System Sciences}, 17(3), 348-375.
+
+    \item Hindley, J.R. (1969). The principal type-scheme of an object in combinatory logic. \textit{Transactions of the American Mathematical Society}, 146, 29-60.
+
+    \item Pierce, B.C. (2002). \textit{Types and Programming Languages}. MIT Press.
+  \end{itemize}
+
+  \section{Desafíos Encontrados}
+
+  Durante el desarrollo del proyecto, se presentaron diversos desafíos relacionados con la implementación de la inferencia de tipos y el manejo de la recursión mediante combinadores de punto fijo. Uno de los principales retos fue integrar el Algoritmo W en el intérprete de MiniLisp, asegurando la correcta unificación de tipos y la detección de errores tipológicos.
+
+  Otro desafío significativo fue la optimización de la ejecución de funciones recursivas, especialmente en el manejo de la memoria y la prevención de desbordamientos de pila. Esto requirió implementar técnicas como la recursión de cola y analizar la eficiencia de los combinadores utilizados.
+
+  \section{Trabajo a Futuro}
+
+  Como continuación de este proyecto, se propone:
+
+  \begin{itemize}
+    \item \textbf{Extender el sistema de tipos}: Incorporar tipos más avanzados, como tipos algebraicos de datos y tipos dependientes, para aumentar la expresividad del lenguaje.
+
+    \item \textbf{Mejorar la optimización}: Implementar un compilador que genere código optimizado, reduciendo la sobrecarga de los combinadores de punto fijo y mejorando el rendimiento en tiempo de ejecución.
+
+    \item \textbf{Añadir soporte para paralelismo}: Explorar la posibilidad de ejecutar funciones en paralelo, aprovechando la naturaleza pura de las funciones en programación funcional y mejorando la eficiencia en sistemas multicore.
+
+    \item \textbf{Desarrollar una interfaz de usuario}: Crear un entorno de desarrollo integrado (IDE) que facilite la escritura y depuración de código en MiniLisp, incluyendo resaltado de sintaxis y sugerencias de autocompletado.
+  \end{itemize}
+
+  \section{Referencias}
+
+  \begingroup
+  \renewcommand{\addcontentsline}[3]{}
+  \renewcommand{\section}[2]{}
+  \begin{thebibliography}{9}
+
+  \bibitem{bird1998introduction}
+  Bird, Richard, and Philip Wadler.
+  \textit{Introduction to Functional Programming}.
+  Prentice Hall, 1998.
+
+  \bibitem{barendregt1984lambda}
+  Barendregt, Henk P.
+  \textit{The Lambda Calculus: Its Syntax and Semantics}.
+  Vol. 103. Elsevier, 1984.
+
+  \bibitem{hutton2016programming}
+  Hutton, Graham.
+  \textit{Programming in Haskell}.
+  Cambridge University Press, 2016.
+
+  \bibitem{curry1958combinatory}
+  Curry, Haskell B., and Robert Feys.
+  \textit{Combinatory Logic}.
+  Vol. 1. North-Holland Publishing Company, 1958.
+
+  \bibitem{pierce2002types}
+  Pierce, Benjamin C.
+  \textit{Types and Programming Languages}.
+  MIT Press, 2002.
+
+  \bibitem{milner1978theory}
+  Milner, Robin.
+  "A theory of type polymorphism in programming."
+  \textit{Journal of Computer and System Sciences} 17.3 (1978): 348-375.
+
+  \bibitem{hindley1969principal}
+  Hindley, J. Roger.
+  "The principal type-scheme of an object in combinatory logic."
+  \textit{Transactions of the American Mathematical Society} 146 (1969): 29-60.
+
+  \bibitem{damas1982principal}
+  Damas, Luis, and Robin Milner.
+  "Principal type-schemes for functional programs."
+  \textit{Proceedings of the 9th ACM SIGPLAN-SIGACT symposium on Principles of programming languages}. 1982.
+
+  \end{thebibliography}
+  \endgroup
+
+\end{document}
